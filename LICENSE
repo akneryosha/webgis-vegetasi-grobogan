@@ -1,0 +1,16 @@
+Copyright (c) 2026 Akner Yosha Ade Saputra. All rights reserved.
+
+This source code and the accompanying data files are made publicly visible
+for viewing and evaluation purposes only (for example, by reviewers and
+prospective employers).
+
+No permission is granted to copy, modify, merge, publish, distribute,
+sublicense, or use this software, in whole or in part, for any other purpose
+without prior written permission from the copyright holder.
+
+Third-party components keep their own licenses and terms:
+- Leaflet (BSD 2-Clause License)
+- Map data (c) OpenStreetMap contributors (ODbL)
+- Contains modified Copernicus Sentinel data (2025)
+
+To request permission, contact: akneryosha0@gmail.com

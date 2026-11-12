@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebGIS Monitoring Kondisi Vegetasi Kecamatan Grobogan</title>
+  <link rel="preconnect" href="https://unpkg.com" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <link rel="stylesheet" href="./asset/css/style.css" />
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+
+    <div class="brand-block">
+      <p class="eyebrow">WebGIS SPK</p>
+      <h1>Monitoring Kondisi Vegetasi Kecamatan Kabupaten Grobogan</h1>
+      <p class="subtitle">NDVI Sentinel-2 &amp; penilaian SAW per periode pengamatan.</p>
+    </div>
+
+    <div class="panel control-panel">
+      <label for="periodSelect">Pilih Tanggal Pengamatan</label>
+      <select id="periodSelect"><option value="">Memuat daftar tanggal...</option></select>
+      <p id="selectedDateText" class="help-text">Tanggal pengamatan belum dipilih.</p>
+    </div>
+
+    <!-- Tab nav -->
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" id="tabBtnRingkasan" onclick="SidebarTabs.show('ringkasan')">
+        📊 Ringkasan
+      </button>
+      <button class="sidebar-tab" id="tabBtnDetail" onclick="SidebarTabs.show('detail')">
+        📍 Detail<span class="tab-dot" id="tabDetailDot"></span>
+      </button>
+    </div>
+
+    <!-- TAB: Ringkasan -->
+    <div class="tab-pane" id="tabRingkasan">
+
+      <div class="summary-grid">
+        <div class="summary-card">
+          <span class="summary-label">Total Kecamatan</span>
+          <strong id="totalKecamatan">-</strong>
+        </div>
+        <div class="summary-card status-baik-card">
+          <span class="summary-label">Vegetasi Tinggi</span>
+          <strong id="countBaik">-</strong>
+        </div>
+        <div class="summary-card status-sedang-card">
+          <span class="summary-label">Vegetasi Sedang</span>
+          <strong id="countSedang">-</strong>
+        </div>
+        <div class="summary-card status-buruk-card">
+          <span class="summary-label">Vegetasi Rendah</span>
+          <strong id="countBuruk">-</strong>
+        </div>
+      </div>
+
+      <!-- Legenda Kondisi — expanded by default -->
+      <div class="panel accordion-panel">
+        <button class="accordion-trigger" onclick="SidebarTabs.toggleAccordion(this)">
+          <span>Legenda: Kondisi Vegetasi</span><span class="accordion-arrow">▾</span>
+        </button>
+        <div class="accordion-body">
+          <div class="legend-item"><span class="legend-swatch status-baik"></span>
+            <div><strong>Vegetasi Tinggi</strong><p>NDVI ≥ 0,50</p></div></div>
+          <div class="legend-item"><span class="legend-swatch status-sedang"></span>
+            <div><strong>Vegetasi Sedang</strong><p>0,30 ≤ NDVI &lt; 0,50</p></div></div>
+          <div class="legend-item"><span class="legend-swatch status-buruk"></span>
+            <div><strong>Vegetasi Rendah</strong><p>NDVI &lt; 0,30</p></div></div>
+          <div class="legend-divider"></div>
+          <p class="legend-subtitle">Overlay Raster NDVI (Sentinel-2)</p>
+          <div class="legend-item"><span class="legend-swatch" style="background:#1a8b1a;"></span>
+            <div><strong>Vegetasi Tinggi</strong><p>NDVI &gt; 0,50</p></div></div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#90ee90;"></span>
+            <div><strong>Vegetasi Sedang</strong><p>0,30 – 0,50</p></div></div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#ffff66;"></span>
+            <div><strong>Vegetasi Rendah</strong><p>0,10 – 0,30</p></div></div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#d2b48c;"></span>
+            <div><strong>Non-Vegetasi</strong><p>0,0 – 0,10</p></div></div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#4682b4;"></span>
+            <div><strong>Air / Tidak Valid</strong><p>NDVI &lt; 0,0</p></div></div>
+        </div>
+      </div>
+
+      <!-- Legenda Perubahan — collapsed by default -->
+      <div class="panel accordion-panel">
+        <button class="accordion-trigger" onclick="SidebarTabs.toggleAccordion(this)">
+          <span>Legenda: Perubahan Vegetasi</span><span class="accordion-arrow" style="transform:rotate(-90deg)">▾</span>
+        </button>
+        <div class="accordion-body" style="display:none;">
+          <div class="legend-item"><span class="legend-swatch swatch-meningkat"></span>
+            <div><strong>Meningkat</strong><p>NDVI naik dari periode sebelumnya</p></div></div>
+          <div class="legend-item"><span class="legend-swatch swatch-stabil"></span>
+            <div><strong>Stabil</strong><p>Perubahan NDVI kecil</p></div></div>
+          <div class="legend-item"><span class="legend-swatch swatch-menurun"></span>
+            <div><strong>Menurun</strong><p>NDVI turun dari periode sebelumnya</p></div></div>
+          <div class="legend-item"><span class="legend-swatch swatch-anomali"></span>
+            <div><strong>Anomali Penurunan</strong><p>Penurunan NDVI cukup tajam</p></div></div>
+          <div class="legend-item"><span class="legend-swatch swatch-netral"></span>
+            <div><strong>Tidak Ada Pembanding</strong><p>Periode awal, belum ada data sebelumnya</p></div></div>
+        </div>
+      </div>
+
+    </div><!-- /tabRingkasan -->
+
+    <!-- TAB: Detail -->
+    <div class="tab-pane" id="tabDetail" style="display:none;">
+      <div class="panel detail-panel">
+        <div id="detailContent" class="detail-empty">
+          <div class="detail-empty-icon">🗺️</div>
+          <p>Klik salah satu kecamatan pada peta untuk melihat detail NDVI, status vegetasi, perubahan, dan skor SAW.</p>
+        </div>
+      </div>
+    </div><!-- /tabDetail -->
+
+  </aside>
+
+  <!-- ═══ MAP SECTION ═══ -->
+  <main class="map-section">
+    <div class="map-header">
+      <h2>Perbandingan Kondisi dan Perubahan Vegetasi Kecamatan</h2>
+      <p>Peta kiri menampilkan kondisi vegetasi pada tanggal aktif. Peta kanan menampilkan perubahan kondisi vegetasi terhadap periode sebelumnya.</p>
+    </div>
+
+    <div class="maps-grid">
+      <section class="map-card">
+        <div class="map-toolbar">
+          <h3>Kondisi Vegetasi Saat Ini</h3>
+          <p>Warna wilayah berdasarkan status vegetasi pada tanggal yang dipilih.</p>
+          <div class="toolbar-buttons">
+            <button id="btnNdviOverlay" class="overlay-btn overlay-active"
+              onclick="window.MapUtils.toggleNdviOverlay()"
+              title="Tampilkan/sembunyikan overlay piksel NDVI dari citra Sentinel-2">
+              🛰 Sembunyikan NDVI Raster
+            </button>
+            <button id="btnPolygon" class="overlay-btn overlay-active"
+              onclick="window.MapUtils.togglePolygon()"
+              title="Tampilkan/sembunyikan warna polygon kecamatan">
+              🗺 Sembunyikan Polygon
+            </button>
+          </div>
+        </div>
+        <div id="mapCurrent" class="map-canvas"></div>
+      </section>
+
+      <section class="map-card">
+        <div class="map-toolbar">
+          <h3>Perubahan Vegetasi Antar Periode</h3>
+          <p>Warna wilayah berdasarkan perubahan kondisi vegetasi: meningkat, stabil, menurun, atau anomali.</p>
+        </div>
+        <div id="mapChange" class="map-canvas"></div>
+      </section>
+    </div>
+  </main>
+
+</div><!-- /app-layout -->
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="./asset/js/scoring.js"></script>
+<script src="./asset/js/saw.js"></script>
+<script src="./asset/js/anomaly.js"></script>
+<script src="./asset/js/map.js"></script>
+<script src="./asset/js/app.js"></script>
+
+<script>
+const SidebarTabs = {
+  show(tab) {
+    document.querySelectorAll('.tab-pane').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.sidebar-tab').forEach(btn => btn.classList.remove('active'));
+    if (tab === 'ringkasan') {
+      document.getElementById('tabRingkasan').style.display = 'block';
+      document.getElementById('tabBtnRingkasan').classList.add('active');
+    } else {
+      document.getElementById('tabDetail').style.display = 'block';
+      document.getElementById('tabBtnDetail').classList.add('active');
+      const dot = document.getElementById('tabDetailDot');
+      if (dot) dot.classList.remove('visible');
+    }
+  },
+
+  toggleAccordion(trigger) {
+    const body  = trigger.closest('.accordion-panel').querySelector('.accordion-body');
+    const arrow = trigger.querySelector('.accordion-arrow');
+    const open  = body.style.display !== 'none';
+    body.style.display    = open ? 'none'  : 'block';
+    arrow.style.transform = open ? 'rotate(-90deg)' : 'rotate(0deg)';
+  },
+
+  _onDetailUpdate() {
+    const el = document.getElementById('detailContent');
+    if (!el || el.querySelector('.detail-empty')) return;
+    const dot = document.getElementById('tabDetailDot');
+    if (dot) dot.classList.add('visible');
+    this.show('detail');
+    document.querySelector('.sidebar')?.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+};
+
+(function() {
+  const target = document.getElementById('detailContent');
+  if (!target) return;
+  new MutationObserver(() => SidebarTabs._onDetailUpdate())
+    .observe(target, { childList: true, subtree: true });
+})();
+</script>
+</body>
+</html>
